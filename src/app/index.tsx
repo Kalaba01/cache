@@ -1,8 +1,9 @@
 import ExpenseCard from "@/components/ExpenseCard";
+import SummaryRow from "@/components/SummaryRow";
 import { Spacing } from "@/constants/theme";
 import { expenses } from "@/data/expenses";
 import { useTheme } from "@/hooks/use-theme";
-import { ScrollView, StyleSheet, Text } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Index() {
@@ -16,7 +17,7 @@ export default function Index() {
         { paddingBottom: Spacing.md + insets.bottom },
       ]}
     >
-      <Text style={{ color: theme.muted }}>{expenses.length} expenses</Text>
+      <SummaryRow expenses={expenses} />
       {expenses.map((expense) => (
         <ExpenseCard key={expense.id} expense={expense} />
       ))}
