@@ -1,13 +1,15 @@
 import { FontSize, Radius, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import type { Expense } from "@/types";
+import type { StyleProp, ViewStyle } from "react-native";
 import { Pressable, StyleSheet, Text } from "react-native";
 
 type ExpenseCardProps = {
   expense: Expense;
+  style?: StyleProp<ViewStyle>;
 };
 
-export default function ExpenseCard({ expense }: ExpenseCardProps) {
+export default function ExpenseCard({ expense, style }: ExpenseCardProps) {
   const theme = useTheme();
 
   return (
@@ -17,6 +19,7 @@ export default function ExpenseCard({ expense }: ExpenseCardProps) {
         styles.card,
         { backgroundColor: theme.card, borderColor: theme.border },
         pressed && styles.pressed,
+        style,
       ]}
     >
       <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
