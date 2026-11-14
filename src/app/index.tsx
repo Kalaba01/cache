@@ -7,6 +7,7 @@ import { fetchExpenses } from "@/data/api";
 import { useTheme } from "@/hooks/use-theme";
 import type { Category, Expense } from "@/types";
 import { CATEGORIES } from "@/types";
+import { groupByDate } from "@/utils/group-by-date";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -14,6 +15,7 @@ import {
   FlatList,
   Pressable,
   ScrollView,
+  SectionList,
   StyleSheet,
   Text,
   View,
@@ -23,11 +25,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Status = "loading" | "error" | "ready";
 type Filter = "All" | Category;
+type Sort = "Newest" | "Highest";
+type Layout = "By day" | "Grid";
 
 const FILTERS: Filter[] = ["All", ...CATEGORIES];
-
-type Sort = "Newest" | "Highest";
 const SORTS: Sort[] = ["Newest", "Highest"];
+const LAYOUTS: Layout[] = ["By day", "Grid"];
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -44,6 +47,7 @@ export default function Index() {
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<Filter>("All");
   const [sort, setSort] = useState<Sort>("Newest");
+  const [layout, setLayout] = useState<Layout>("By day");
 
   useEffect(() => {
     let ignore = false;
@@ -104,6 +108,8 @@ export default function Index() {
     sort === "Newest" ? b.date.localeCompare(a.date) : b.amount - a.amount,
   );
 
+  const sections = groupByDate(sorted);
+
   const emptyTitle =
     expenses.length === 0 ? "No expenses yet" : `No ${filter} expenses`;
   const emptyMessage =
@@ -146,6 +152,86 @@ export default function Index() {
     );
   }
 
+  const listHeader = (
+    <View style={styles.headerContent}>
+      <SummaryRow expenses={expenses} />
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chips}
+      >
+        {FILTERS.map((f) => (
+          <FilterChip
+            key={f}
+            label={f}
+            selected={filter === f}
+            onPress={() => setFilter(f)}
+          />
+        ))}
+      </ScrollView>
+      <View style={styles.optionsRow}>
+        {SORTS.map((s) => (
+          <FilterChip
+            key={s}
+            label={s}
+            selected={sort === s}
+            onPress={() => setSort(s)}
+          />
+        ))}
+        <View style={[styles.divider, { backgroundColor: theme.border }]} />
+        {LAYOUTS.map((l) => (
+          <FilterChip
+            key={l}
+            label={l}
+            selected={layout === l}
+            onPress={() => setLayout(l)}
+          />
+        ))}
+      </View>
+    </View>
+  );
+
+  const emptyState = <EmptyState title={emptyTitle} message={emptyMessage} />;
+
+  const contentStyle = [
+    styles.content,
+    { paddingBottom: Spacing.md + insets.bottom },
+  ];
+
+  if (layout === "By day") {
+    return (
+      <SectionList
+        sections={sections}
+        keyExtractor={(expense) => expense.id}
+        refreshing={refreshing}
+        onRefresh={refresh}
+        stickySectionHeadersEnabled
+        renderItem={({ item }) => (
+          <ExpenseCard expense={item} onLongPress={() => confirmDelete(item)} />
+        )}
+        renderSectionHeader={({ section }) => (
+          <View
+            style={[
+              styles.sectionHeader,
+              { backgroundColor: theme.background },
+            ]}
+          >
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+              {section.title}
+            </Text>
+            <Text style={[styles.sectionTotal, { color: theme.muted }]}>
+              {section.total.toFixed(2)} KM
+            </Text>
+          </View>
+        )}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={emptyState}
+        ItemSeparatorComponent={Separator}
+        contentContainerStyle={contentStyle}
+      />
+    );
+  }
+
   return (
     <FlatList
       key={columns}
@@ -162,44 +248,11 @@ export default function Index() {
           onLongPress={() => confirmDelete(item)}
         />
       )}
-      ListHeaderComponent={
-        <View style={styles.headerContent}>
-          <SummaryRow expenses={expenses} />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chips}
-          >
-            {FILTERS.map((f) => (
-              <FilterChip
-                key={f}
-                label={f}
-                selected={filter === f}
-                onPress={() => setFilter(f)}
-              />
-            ))}
-          </ScrollView>
-          <View style={styles.sortRow}>
-            {SORTS.map((s) => (
-              <FilterChip
-                key={s}
-                label={s}
-                selected={sort === s}
-                onPress={() => setSort(s)}
-              />
-            ))}
-          </View>
-        </View>
-      }
+      ListHeaderComponent={listHeader}
       ListHeaderComponentStyle={styles.header}
-      ListEmptyComponent={
-        <EmptyState title={emptyTitle} message={emptyMessage} />
-      }
+      ListEmptyComponent={emptyState}
       ItemSeparatorComponent={Separator}
-      contentContainerStyle={[
-        styles.content,
-        { paddingBottom: Spacing.md + insets.bottom },
-      ]}
+      contentContainerStyle={contentStyle}
     />
   );
 }
@@ -209,8 +262,24 @@ const styles = StyleSheet.create({
   header: { marginBottom: Spacing.md },
   headerContent: { gap: Spacing.md },
   chips: { gap: Spacing.sm },
+  optionsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  divider: { width: 1, alignSelf: "stretch" },
   separator: { height: Spacing.md },
   columns: { gap: Spacing.md },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.md,
+  },
+  sectionTitle: { fontSize: FontSize.body, fontWeight: "bold" },
+  sectionTotal: { fontSize: FontSize.body },
   center: {
     flex: 1,
     alignItems: "center",
@@ -226,5 +295,4 @@ const styles = StyleSheet.create({
   },
   buttonText: { fontSize: FontSize.body, fontWeight: "bold" },
   pressed: { opacity: 0.6 },
-  sortRow: { flexDirection: "row", gap: Spacing.sm },
 });
