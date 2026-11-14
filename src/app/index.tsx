@@ -10,6 +10,7 @@ import { CATEGORIES } from "@/types";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   ScrollView,
@@ -78,6 +79,18 @@ export default function Index() {
     }
   }
 
+  function confirmDelete(expense: Expense) {
+    Alert.alert("Delete expense?", `"${expense.title}" will be removed.`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () =>
+          setExpenses((list) => list.filter((e) => e.id !== expense.id)),
+      },
+    ]);
+  }
+
   const visible =
     filter === "All"
       ? expenses
@@ -135,7 +148,11 @@ export default function Index() {
       refreshing={refreshing}
       onRefresh={refresh}
       renderItem={({ item }) => (
-        <ExpenseCard expense={item} style={{ width: cardWidth }} />
+        <ExpenseCard
+          expense={item}
+          style={{ width: cardWidth }}
+          onLongPress={() => confirmDelete(item)}
+        />
       )}
       ListHeaderComponent={
         <View style={styles.headerContent}>

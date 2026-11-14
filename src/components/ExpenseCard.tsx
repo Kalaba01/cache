@@ -7,14 +7,25 @@ import { Pressable, StyleSheet, Text } from "react-native";
 type ExpenseCardProps = {
   expense: Expense;
   style?: StyleProp<ViewStyle>;
+  onLongPress?: () => void;
 };
 
-export default function ExpenseCard({ expense, style }: ExpenseCardProps) {
+export default function ExpenseCard({
+  expense,
+  style,
+  onLongPress,
+}: ExpenseCardProps) {
   const theme = useTheme();
+  const amount = expense.amount.toFixed(2);
 
   return (
     <Pressable
       onPress={() => console.log("Open", expense.id)}
+      onLongPress={onLongPress}
+      android_ripple={{ color: theme.border }}
+      accessibilityRole="button"
+      accessibilityLabel={`${expense.title}, ${amount} KM, ${expense.category}, ${expense.date}`}
+      accessibilityHint="Long press to delete"
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: theme.card, borderColor: theme.border },
@@ -25,9 +36,7 @@ export default function ExpenseCard({ expense, style }: ExpenseCardProps) {
       <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
         {expense.title}
       </Text>
-      <Text style={[styles.amount, { color: theme.text }]}>
-        {expense.amount.toFixed(2)} KM
-      </Text>
+      <Text style={[styles.amount, { color: theme.text }]}>{amount} KM</Text>
       <Text style={[styles.date, { color: theme.muted }]}>{expense.date}</Text>
 
       <Text
