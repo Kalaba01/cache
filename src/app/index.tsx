@@ -1,15 +1,18 @@
 import EmptyState from "@/components/EmptyState";
 import ExpenseCard from "@/components/ExpenseCard";
+import FilterChip from "@/components/FilterChip";
 import SummaryRow from "@/components/SummaryRow";
 import { FontSize, Radius, Spacing } from "@/constants/theme";
 import { fetchExpenses } from "@/data/api";
 import { useTheme } from "@/hooks/use-theme";
-import type { Expense } from "@/types";
+import type { Category, Expense } from "@/types";
+import { CATEGORIES } from "@/types";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -18,6 +21,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Status = "loading" | "error" | "ready";
+type Filter = "All" | Category;
+
+const FILTERS: Filter[] = ["All", ...CATEGORIES];
 
 function Separator() {
   return <View style={styles.separator} />;
@@ -32,6 +38,7 @@ export default function Index() {
   const [status, setStatus] = useState<Status>("loading");
   const [attempt, setAttempt] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<Filter>("All");
 
   useEffect(() => {
     let ignore = false;
@@ -65,10 +72,23 @@ export default function Index() {
       const data = await fetchExpenses();
       setExpenses(data);
     } catch {
+      // osvježavanje nije uspjelo, stara lista ostaje na ekranu
     } finally {
       setRefreshing(false);
     }
   }
+
+  const visible =
+    filter === "All"
+      ? expenses
+      : expenses.filter((expense) => expense.category === filter);
+
+  const emptyTitle =
+    expenses.length === 0 ? "No expenses yet" : `No ${filter} expenses`;
+  const emptyMessage =
+    expenses.length === 0
+      ? "Your expenses will appear here."
+      : "Choose another category.";
 
   const columns = width >= 900 ? 3 : width >= 600 ? 2 : 1;
   const cardWidth = Math.floor(
@@ -110,20 +130,35 @@ export default function Index() {
       key={columns}
       numColumns={columns}
       columnWrapperStyle={columns > 1 ? styles.columns : undefined}
-      data={expenses}
+      data={visible}
       keyExtractor={(expense) => expense.id}
       refreshing={refreshing}
       onRefresh={refresh}
       renderItem={({ item }) => (
         <ExpenseCard expense={item} style={{ width: cardWidth }} />
       )}
-      ListHeaderComponent={<SummaryRow expenses={expenses} />}
+      ListHeaderComponent={
+        <View style={styles.headerContent}>
+          <SummaryRow expenses={expenses} />
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chips}
+          >
+            {FILTERS.map((f) => (
+              <FilterChip
+                key={f}
+                label={f}
+                selected={filter === f}
+                onPress={() => setFilter(f)}
+              />
+            ))}
+          </ScrollView>
+        </View>
+      }
       ListHeaderComponentStyle={styles.header}
       ListEmptyComponent={
-        <EmptyState
-          title="No expenses yet"
-          message="Your expenses will appear here."
-        />
+        <EmptyState title={emptyTitle} message={emptyMessage} />
       }
       ItemSeparatorComponent={Separator}
       contentContainerStyle={[
@@ -137,6 +172,8 @@ export default function Index() {
 const styles = StyleSheet.create({
   content: { padding: Spacing.md, flexGrow: 1 },
   header: { marginBottom: Spacing.md },
+  headerContent: { gap: Spacing.md },
+  chips: { gap: Spacing.sm },
   separator: { height: Spacing.md },
   columns: { gap: Spacing.md },
   center: {
