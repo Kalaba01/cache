@@ -1,3 +1,4 @@
+import EmptyState from "@/components/EmptyState";
 import ExpenseCard from "@/components/ExpenseCard";
 import SummaryRow from "@/components/SummaryRow";
 import { Spacing } from "@/constants/theme";
@@ -30,6 +31,12 @@ export default function Index() {
       )}
       ListHeaderComponent={<SummaryRow expenses={expenses} />}
       ListHeaderComponentStyle={styles.header}
+      ListEmptyComponent={
+        <EmptyState
+          title="No expenses yet"
+          message="Your expenses will appear here."
+        />
+      }
       ItemSeparatorComponent={Separator}
       contentContainerStyle={[
         styles.content,
@@ -40,7 +47,7 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: Spacing.md },
+  content: { padding: Spacing.md, flexGrow: 1 },
   header: { marginBottom: Spacing.md },
   separator: { height: Spacing.md },
   columns: { gap: Spacing.md },
