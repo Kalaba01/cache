@@ -26,6 +26,9 @@ type Filter = "All" | Category;
 
 const FILTERS: Filter[] = ["All", ...CATEGORIES];
 
+type Sort = "Newest" | "Highest";
+const SORTS: Sort[] = ["Newest", "Highest"];
+
 function Separator() {
   return <View style={styles.separator} />;
 }
@@ -40,6 +43,7 @@ export default function Index() {
   const [attempt, setAttempt] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<Filter>("All");
+  const [sort, setSort] = useState<Sort>("Newest");
 
   useEffect(() => {
     let ignore = false;
@@ -96,6 +100,10 @@ export default function Index() {
       ? expenses
       : expenses.filter((expense) => expense.category === filter);
 
+  const sorted = [...visible].sort((a, b) =>
+    sort === "Newest" ? b.date.localeCompare(a.date) : b.amount - a.amount,
+  );
+
   const emptyTitle =
     expenses.length === 0 ? "No expenses yet" : `No ${filter} expenses`;
   const emptyMessage =
@@ -143,7 +151,7 @@ export default function Index() {
       key={columns}
       numColumns={columns}
       columnWrapperStyle={columns > 1 ? styles.columns : undefined}
-      data={visible}
+      data={sorted}
       keyExtractor={(expense) => expense.id}
       refreshing={refreshing}
       onRefresh={refresh}
@@ -171,6 +179,16 @@ export default function Index() {
               />
             ))}
           </ScrollView>
+          <View style={styles.sortRow}>
+            {SORTS.map((s) => (
+              <FilterChip
+                key={s}
+                label={s}
+                selected={sort === s}
+                onPress={() => setSort(s)}
+              />
+            ))}
+          </View>
         </View>
       }
       ListHeaderComponentStyle={styles.header}
@@ -208,4 +226,5 @@ const styles = StyleSheet.create({
   },
   buttonText: { fontSize: FontSize.body, fontWeight: "bold" },
   pressed: { opacity: 0.6 },
+  sortRow: { flexDirection: "row", gap: Spacing.sm },
 });
