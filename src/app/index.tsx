@@ -31,6 +31,7 @@ export default function Index() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [status, setStatus] = useState<Status>("loading");
   const [attempt, setAttempt] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -56,6 +57,17 @@ export default function Index() {
   function retry() {
     setStatus("loading");
     setAttempt((a) => a + 1);
+  }
+
+  async function refresh() {
+    setRefreshing(true);
+    try {
+      const data = await fetchExpenses();
+      setExpenses(data);
+    } catch {
+    } finally {
+      setRefreshing(false);
+    }
   }
 
   const columns = width >= 900 ? 3 : width >= 600 ? 2 : 1;
@@ -100,6 +112,8 @@ export default function Index() {
       columnWrapperStyle={columns > 1 ? styles.columns : undefined}
       data={expenses}
       keyExtractor={(expense) => expense.id}
+      refreshing={refreshing}
+      onRefresh={refresh}
       renderItem={({ item }) => (
         <ExpenseCard expense={item} style={{ width: cardWidth }} />
       )}
