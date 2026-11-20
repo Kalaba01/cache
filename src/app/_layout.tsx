@@ -32,6 +32,7 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen name="about" options={{ title: "About" }} />
+        <Stack.Screen name="expense/[id]" options={{ title: "" }} />
       </Stack>
     </>
   );
