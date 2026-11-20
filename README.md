@@ -20,6 +20,7 @@ npx expo start
 ## Features
 
 - [x] See your expenses in a list (sample data for now)
+- [x] See expenses grouped by day, with a total for each day
 - [x] Quick totals above the list: number of expenses, total spent and top category
 - [x] Light and dark mode that follows your phone's setting
 - [x] Layout that fits small phones, large phones and tablets
@@ -27,9 +28,9 @@ npx expo start
 - [x] Pull the list down to refresh it
 - [x] Show only one category, and sort by newest or highest amount
 - [x] Long press an expense to delete it, with a confirmation first (not saved yet)
-- [ ] Open an expense to see all its details
+- [x] Tap an expense to see all its details
+- [x] A friendly page for wrong links, and details that open straight from a link
 - [ ] Log in and sign up with email and password
-- [ ] See expenses grouped by day
 - [ ] Add and edit expenses, with checks on the form
 - [ ] Attach a receipt photo from the camera or gallery
 - [ ] See a monthly summary by category
