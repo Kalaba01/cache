@@ -1,6 +1,7 @@
 import { FontSize, Radius, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import type { Expense } from "@/types";
+import { formatDate } from "@/utils/format";
 import type { StyleProp, ViewStyle } from "react-native";
 import { Pressable, StyleSheet, Text } from "react-native";
 
@@ -19,6 +20,7 @@ export default function ExpenseCard({
 }: ExpenseCardProps) {
   const theme = useTheme();
   const amount = expense.amount.toFixed(2);
+  const date = formatDate(expense.date);
 
   return (
     <Pressable
@@ -26,7 +28,7 @@ export default function ExpenseCard({
       onLongPress={onLongPress}
       android_ripple={{ color: theme.border }}
       accessibilityRole="button"
-      accessibilityLabel={`${expense.title}, ${amount} KM, ${expense.category}, ${expense.date}`}
+      accessibilityLabel={`${expense.title}, ${amount} KM, ${expense.category}, ${date}`}
       accessibilityHint="Opens the expense. Long press to delete."
       style={({ pressed }) => [
         styles.card,
@@ -39,7 +41,7 @@ export default function ExpenseCard({
         {expense.title}
       </Text>
       <Text style={[styles.amount, { color: theme.text }]}>{amount} KM</Text>
-      <Text style={[styles.date, { color: theme.muted }]}>{expense.date}</Text>
+      <Text style={[styles.date, { color: theme.muted }]}>{date}</Text>
 
       <Text
         style={[
