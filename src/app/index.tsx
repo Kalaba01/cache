@@ -8,6 +8,7 @@ import { useTheme } from "@/hooks/use-theme";
 import type { Category, Expense } from "@/types";
 import { CATEGORIES } from "@/types";
 import { groupByDate } from "@/utils/group-by-date";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -40,6 +41,7 @@ export default function Index() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
+  const router = useRouter();
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [status, setStatus] = useState<Status>("loading");
@@ -207,7 +209,16 @@ export default function Index() {
         onRefresh={refresh}
         stickySectionHeadersEnabled
         renderItem={({ item }) => (
-          <ExpenseCard expense={item} onLongPress={() => confirmDelete(item)} />
+          <ExpenseCard
+            expense={item}
+            onPress={() =>
+              router.push({
+                pathname: "/expense/[id]",
+                params: { id: item.id },
+              })
+            }
+            onLongPress={() => confirmDelete(item)}
+          />
         )}
         renderSectionHeader={({ section }) => (
           <View
@@ -245,6 +256,9 @@ export default function Index() {
         <ExpenseCard
           expense={item}
           style={{ width: cardWidth }}
+          onPress={() =>
+            router.push({ pathname: "/expense/[id]", params: { id: item.id } })
+          }
           onLongPress={() => confirmDelete(item)}
         />
       )}

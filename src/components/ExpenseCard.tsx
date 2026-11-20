@@ -7,12 +7,14 @@ import { Pressable, StyleSheet, Text } from "react-native";
 type ExpenseCardProps = {
   expense: Expense;
   style?: StyleProp<ViewStyle>;
+  onPress?: () => void;
   onLongPress?: () => void;
 };
 
 export default function ExpenseCard({
   expense,
   style,
+  onPress,
   onLongPress,
 }: ExpenseCardProps) {
   const theme = useTheme();
@@ -20,12 +22,12 @@ export default function ExpenseCard({
 
   return (
     <Pressable
-      onPress={() => console.log("Open", expense.id)}
+      onPress={onPress}
       onLongPress={onLongPress}
       android_ripple={{ color: theme.border }}
       accessibilityRole="button"
       accessibilityLabel={`${expense.title}, ${amount} KM, ${expense.category}, ${expense.date}`}
-      accessibilityHint="Long press to delete"
+      accessibilityHint="Opens the expense. Long press to delete."
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: theme.card, borderColor: theme.border },
