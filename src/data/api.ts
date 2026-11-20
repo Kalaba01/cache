@@ -10,3 +10,7 @@ export async function fetchExpenses(
   if (options.fail) throw new Error("Could not load expenses");
   return expenses;
 }
+
+export function getExpense(id: string): Expense | undefined {
+  return expenses.find((expense) => expense.id === id);
+}
